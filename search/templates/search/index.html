@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Home</title>
+</head>
+<body>
+  <form action="{% url 'show_result' %}" method="GET">
+    <div class="input-group">
+        <input type="text" name="q" class="form-control" placeholder="Arama yap...">
+        <div class="input-group-append">
+            <button class="btn btn-outline-secondary" type="submit">Ara</button>
+        </div>
+    </div>
+</form>
+
+</body>
+</html>
+
+<style>
+  .input-group {
+  display: flex;
+  justify-content: center;
+  margin-top: 50px; /* İstenilen boşluğa göre ayarlayabilirsiniz */
+}
+
+.input-group .form-control {
+  flex: 1;
+  margin-right: 10px; /* İstenilen boşluğa göre ayarlayabilirsiniz */
+}
+
+.input-group-append {
+  display: flex;
+}
+
+.input-group-append .btn {
+  border-top-left-radius: 0;
+  border-bottom-left-radius: 0;
+}
+
+</style>

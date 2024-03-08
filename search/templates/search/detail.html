@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{{ title }}</title>
+  <!-- Bootstrap CSS -->
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+</head>
+<body>
+  <div class="container mt-5">
+    <h1 class="mb-4">{{ title }}</h1>
+    <p><strong>Publish Date:</strong> {{ publishDate }}</p>
+    <p><strong>Authors:</strong> {{ authors }}</p>
+    <p><strong>Abstract:</strong> {{ abstract }}</p>
+    <p><strong>Keywords:</strong> {{ keywords|join:", " }}</p>
+    <p><strong>References:</strong></p>
+    <ul>
+      {% for reference in references %}
+        <li>{{ reference }}</li>
+      {% endfor %}
+    </ul>
+    <p><strong>Citations:</strong></p>
+    <ul>
+      {% for key, value in citations.items %}
+        <li><strong>{{ key }}:</strong> {{ value }}</li>
+      {% endfor %}
+    </ul>
+    <p><strong>DOI:</strong> <a href="{{ doi }}">{{ doi }}</a></p>
+    <p><strong>Publisher:</strong> {{ publisher }}</p>
+    <p><strong>Research Type:</strong> {{ researchType }}</p>
+  </div>
+  <!-- Bootstrap JS (optional) -->
+  <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+</body>
+</html>

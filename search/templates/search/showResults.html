@@ -1,0 +1,49 @@
+<!-- result/showResults.html -->
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Search Results</title>
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+</head>
+<body>
+    <div class="container">
+        <h1>Search Results for "{{ corrected_query }}"</h1>
+        {% if query != corrected_query %}
+        <p>Sorry, no results found for "{{ query }}". Did you mean: "{{ corrected_query }}"?</p>
+        {% endif %}
+    
+        <form action="{% url 'show_filtered' %}" method="GET">
+            <!-- Mevcut query'yi saklamak için gizli input alanı -->
+            <input type="hidden" name="query" value="{{ query }}">
+            <input type="hidden" name="corrected_query" value="{{ corrected_query }}">
+            <input type="hidden" name="url" value="{{ url }}">
+            <select name="sort">
+                <option value="oldest">En Eskiden En Yeniye</option>
+                <option value="newest">En Yeniden En Eskiye</option>
+            </select>
+            <button type="submit">Filtrele</button>
+        </form>
+        
+    
+        <div class="row">
+            {% for title, link, websitelink, year in pdf_zip %}
+            <div class="col-md-12">
+                <div class="card mb-4">
+                    <div class="card-body">
+                        <h5 class="card-title"><a href="{% url 'detail' %}?title={{ title|urlencode }}&websitelink={{ websitelink|urlencode }}">{{ title }}</a></h5>
+                        <p class="card-text"><a href="{{ link }}" target="_blank">PDF Link</a></p>
+                        <p class="card-text">Year: {{ year }}</p> <!-- Yıl bilgisini ekle -->
+                    </div>
+                </div>
+            </div>
+
+            {% endfor %}
+        </div>
+    </div>
+    
+</body>
+</html>
