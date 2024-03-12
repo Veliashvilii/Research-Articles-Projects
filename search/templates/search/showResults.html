@@ -8,9 +8,23 @@
     <title>Search Results</title>
     <!-- Bootstrap CSS -->
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <style>
+        /* Boşluklar için CSS */
+        .mb-8 {
+            margin-bottom: 8px;
+        }
+    </style>
 </head>
 <body>
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg navbar-light bg-light">
+        <div class="container">
+            <a class="navbar-brand" href="{% url 'show_main' %}">Veliashvili Research Motor</a>
+        </div>
+    </nav>
+
     <div class="container">
+        <div class="mb-8"></div> <!-- Boşluk -->
         <h1>Search Results for "{{ corrected_query }}"</h1>
         {% if query != corrected_query %}
         <p>Sorry, no results found for "{{ query }}". Did you mean: "{{ corrected_query }}"?</p>
@@ -28,19 +42,23 @@
             <button type="submit">Filtrele</button>
         </form>
         
+        <div class="mb-8"></div> <!-- Boşluk -->
     
         <div class="row">
             {% for title, link, websitelink, year in pdf_zip %}
             <div class="col-md-12">
                 <div class="card mb-4">
                     <div class="card-body">
-                        <h5 class="card-title"><a href="{% url 'detail' %}?title={{ title|urlencode }}&websitelink={{ websitelink|urlencode }}">{{ title }}</a></h5>
-                        <p class="card-text"><a href="{{ link }}" target="_blank">PDF Link</a></p>
+                        <a href="{{ link }}" target="_blank" class="btn btn-primary float-right">
+                            <i class="fas fa-file-pdf"></i> PDF
+                        </a>
+                        <h5 class="card-title">
+                            <button class="btn btn-link" onclick="window.location.href='{% url 'detail' %}?title={{ title|urlencode }}&websitelink={{ websitelink|urlencode }}'">Detail</button>{{ title }}
+                        </h5>
                         <p class="card-text">Year: {{ year }}</p> <!-- Yıl bilgisini ekle -->
                     </div>
                 </div>
             </div>
-
             {% endfor %}
         </div>
     </div>
