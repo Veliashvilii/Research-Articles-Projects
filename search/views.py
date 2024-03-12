@@ -6,9 +6,40 @@ import threading
 import woosh
 from autocorrect import Speller
 from pymongo import MongoClient
+from elasticsearch import Elasticsearch
+import random
+
+
 
 def index(request):
     return render(request, 'search/index.html')
+
+
+
+def publicationShowElastic(es, publications):
+    for publication in publications:
+        publication_id = publication.pop('_id')
+        try:
+            result = es.get(index="publication", id=publication_id)
+            print(result['_source'])
+            print("\n\n\n")
+        except Exception as e:
+            print(f"Hata: {e}")
+
+def deleteAllPublicationsElastic(es):
+    indexs = es.indices.get_alias().keys()
+    print(indexs)
+    for index in indexs:
+        es.indices.delete(index=index)
+
+def savePublicationsElastic(es, publications):
+    for publication in publications:
+        publication_id = publication.pop('_id')
+        es.index(
+            index="publication",
+            id= publication_id,
+            body=publication
+        )
 
 def downloadPDF(url, file_name):
     try:
@@ -82,6 +113,17 @@ def correct_spelling(query):
     return corrected_query
 
 def show_result(request):
+    es = Elasticsearch(['http://localhost:9200'])
+    
+    client = MongoClient('mongodb://localhost:27017/')
+    db = client['yazlab']
+    collection = db['publications']
+    publications = collection.find()
+
+    if publications:
+        deleteAllPublicationsElastic(es)
+        collection.drop()   
+
     query = request.GET.get('q')
     corrected_query = correct_spelling(query)
     url = f"https://dergipark.org.tr/en/search?q={corrected_query}&section=articles"
@@ -100,10 +142,23 @@ def show_result(request):
         
         #threading.Thread(target=download_pdf_background, args=(pdf_links,)).start() # Pdfleri indirme işlemi
     pdf_zip = zip(pdf_titles, pdf_links, websitelinks, years)
-    print(url)
-
+    print(url) 
+ 
+    print("Kontrol Noktası 1")
     for website in websitelinks:
-       saveAllDetail(website)
+       print("Kontrol Noktası 2")
+       id = random.randint(1, 10000000)
+       saveAllDetail(website, query, id)
+    print("Kontrol Noktası 3")
+    
+    print("Kontrol Noktası 4")
+    collectionNew = db['publications']
+    print("Kontrol Noktası 5")
+    publicationsNew = collectionNew.find()
+    print("Kontrol Noktası 6")
+    savePublicationsElastic(es, publicationsNew)
+    print("Kontrol Noktası 7")
+    
 
     context = {
         'query': query,
@@ -228,15 +283,19 @@ def takeDetailPublisherTitle(soup):
   return journal_title
 
 def takeDetailArticlesType(soup):
-  research_article = soup.find('span', class_='kt-font-bold').text.strip()
-  return research_article
+    research_article_tag = soup.find('span', class_='kt-font-bold')
+    if research_article_tag is not None:
+        research_article = research_article_tag.text.strip()
+        return research_article
+    else:
+        return ""
 
 def takeDetailTitle(soup):
   title_element = soup.find('h3', class_='article-title')
   title = title_element.text.strip()
   return title
 
-def saveAllDetail(url):
+def saveAllDetail(url, query, ID):
     response = requests.get(url)
     if response.status_code == 200:
         html_content = response.text
@@ -257,12 +316,13 @@ def saveAllDetail(url):
         collection = db['publications']
 
         publication_data = {
+            '_id': ID,
             'title': title,
             'publication_date': publishDate,
             'authors': authors,
             'publication_type': researchType,
             'publisher': publisher,
-            'keywords_search': keywords,
+            'keywords_search': query,
             'keywords_article': keywords,
             'summary': abstract,
             'references': references,
@@ -270,5 +330,6 @@ def saveAllDetail(url):
             'doi': doi,
             'url': url,
         }
+
 
         collection.insert_one(publication_data)
