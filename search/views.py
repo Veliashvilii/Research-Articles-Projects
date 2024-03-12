@@ -192,10 +192,12 @@ def show_result(request):
     print(url) 
  
     print("Kontrol Noktası 1")
+    counterTitle = 0
     for website in websitelinks:
        print("Kontrol Noktası 2")
        id = random.randint(1, 10000000)
-       saveAllDetail(website, query, id)
+       saveAllDetail(website, query, id, pdf_titles[counterTitle])
+       counterTitle += 1
     print("Kontrol Noktası 3")
     
     print("Kontrol Noktası 4")
@@ -337,17 +339,11 @@ def takeDetailArticlesType(soup):
     else:
         return ""
 
-def takeDetailTitle(soup):
-  title_element = soup.find('h3', class_='article-title')
-  title = title_element.text.strip()
-  return title
-
-def saveAllDetail(url, query, ID):
+def saveAllDetail(url, query, ID, pdf_title):
     response = requests.get(url)
     if response.status_code == 200:
         html_content = response.text
         soup = BeautifulSoup(html_content, 'html.parser')
-        title = takeDetailTitle(soup)
         publishDate = takeDetailArticleDate(soup)
         authors = takeDetailArticlesAuthors(soup)
         abstract = takeDetailArticlesAbstract(soup)
@@ -364,7 +360,7 @@ def saveAllDetail(url, query, ID):
 
         publication_data = {
             '_id': ID,
-            'title': title,
+            'title': pdf_title,
             'publication_date': publishDate,
             'authors': authors,
             'publication_type': researchType,
