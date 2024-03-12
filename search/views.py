@@ -18,34 +18,11 @@ def index(request):
 
     if es_publications:
         context['publications'] = publicationMakeContextElastic(es, es_publications)
-        publicationShowElastic(es, es_publications)
+        #publicationShowElastic(es, es_publications)
     else:
         print("İçerik Bulunamadı!")
           
     return render(request, 'search/index.html', context)
-
-def publicationShowElastic(es, publications):
-    for publication in publications:
-        try:
-            result = es.get(index="publication", id=publication['_id'])
-            source = result['_source']
-            print("Title:", source['title'])
-            print("Publication Date:", source['publication_date'])
-            print("Authors:", source['authors'])
-            print("Publication Type:", source['publication_type'])
-            print("Publisher:", source['publisher'])
-            print("Keywords Search:", source['keywords_search'])
-            print("Keywords Article:", ', '.join(source['keywords_article']))
-            print("Summary:", source['summary'])
-            print("References:")
-            for reference in source['references']:
-                print("\t", reference)
-            print("Citation Count:", source['citation_count'])
-            print("DOI:", source['doi'])
-            print("URL:", source['url'])
-            print("\n\n\n")
-        except Exception as e:
-            print(f"Hata: {e}")
 
 def publicationMakeContextElastic(es, publications):
     pdf_titles = []
@@ -159,6 +136,16 @@ def correct_spelling(query):
     corrected_query = spell(query)
     return corrected_query
 
+def takeAllCiteCount(websites):
+    citeCounter = []
+
+    for website in websites:
+        response = requests.get(website)
+        html_content = response.text
+        soup = BeautifulSoup(html_content, 'html.parser')
+        citeCounter.append(len(takeDetailArticlesCites(soup)))
+    return citeCounter
+
 def show_result(request):
     es = Elasticsearch(['http://localhost:9200'])
     
@@ -183,12 +170,13 @@ def show_result(request):
         websitelinks = takeWebsiteLink(soup)
         pdf_links = takeAllPdfLinks(websitelinks)
         years = takeArticlesDates(soup)
+        cites = takeAllCiteCount(websitelinks)
 
         for year in years:
             print(year)
         
         #threading.Thread(target=download_pdf_background, args=(pdf_links,)).start() # Pdfleri indirme işlemi
-    pdf_zip = zip(pdf_titles, pdf_links, websitelinks, years)
+    pdf_zip = zip(pdf_titles, pdf_links, websitelinks, years, cites)
     print(url) 
  
     print("Kontrol Noktası 1")
@@ -232,11 +220,16 @@ def show_filtered(request):
         websitelinks = takeWebsiteLink(soup)
         pdf_links = takeAllPdfLinks(websitelinks)
         years = takeArticlesDates(soup)
-    pdf_zip = zip(pdf_titles, pdf_links, websitelinks, years)
+        cites = takeAllCiteCount(websitelinks)
+    pdf_zip = zip(pdf_titles, pdf_links, websitelinks, years, cites)
     if sort_option == 'oldest':
         pdf_zip = sorted(pdf_zip, key=lambda x: x[3])
     elif sort_option == 'newest':
         pdf_zip = sorted(pdf_zip, key=lambda x: x[3], reverse=True)
+    elif sort_option == 'much':
+        pdf_zip = sorted(pdf_zip, key=lambda x: x[4], reverse=True)
+    elif sort_option == 'less':
+        pdf_zip = sorted(pdf_zip, key=lambda x: x[4])
 
     context = {
         'query': query,

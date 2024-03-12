@@ -38,6 +38,8 @@
             <select name="sort">
                 <option value="oldest">En Eskiden En Yeniye</option>
                 <option value="newest">En Yeniden En Eskiye</option>
+                <option value="much">En Fazla Atıf Sayısından En Aza</option>
+                <option value="less">En Az Atıf Sayısından En Fazlaya</option>
             </select>
             <button type="submit">Filtrele</button>
         </form>
@@ -45,7 +47,7 @@
         <div class="mb-8"></div> <!-- Boşluk -->
     
         <div class="row">
-            {% for title, link, websitelink, year in pdf_zip %}
+            {% for title, link, websitelink, year, cite in pdf_zip %}
             <div class="col-md-12">
                 <div class="card mb-4">
                     <div class="card-body">
@@ -55,7 +57,8 @@
                         <h5 class="card-title">
                             <button class="btn btn-link" onclick="window.location.href='{% url 'detail' %}?title={{ title|urlencode }}&websitelink={{ websitelink|urlencode }}'">Detail</button>{{ title }}
                         </h5>
-                        <p class="card-text">Year: {{ year }}</p> <!-- Yıl bilgisini ekle -->
+                        <p class="card-text">Year: {{ year }}</p>
+                        <p class="card-text">Cite Count: {{ cite }}</p>
                     </div>
                 </div>
             </div>
