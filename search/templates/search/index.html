@@ -1,42 +1,46 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Home</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Publication List</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
 </head>
 <body>
-  <form action="{% url 'show_result' %}" method="GET">
-    <div class="input-group">
-        <input type="text" name="q" class="form-control" placeholder="Arama yap...">
-        <div class="input-group-append">
-            <button class="btn btn-outline-secondary" type="submit">Ara</button>
+    <nav class="navbar navbar-expand-lg navbar-light bg-light">
+        <div class="container">
+            <a class="navbar-brand" href="#">
+                <img src="path_to_your_logo.png" width="30" height="30" class="d-inline-block align-top" alt="">
+                Veliashvili Research Motor
+            </a>
+        </div>
+    </nav>
+
+    <div class="container mt-4">
+
+        <form action="{% url 'show_result' %}" method="GET">
+            <div class="input-group mb-3">
+                <input type="text" name="q" class="form-control" placeholder="Arama yap...">
+                <div class="input-group-append">
+                    <button class="btn btn-outline-secondary" type="submit">Ara</button>
+                </div>
+            </div>
+        </form>
+
+        <div class="row">
+            {% for publication in publications %}
+            <div class="col-md-12 mb-4">
+                <div class="card shadow-sm">
+                    <div class="card-body">
+                        <h5 class="card-title">{{ publication.title }}</h5>
+                        <p class="card-text">ID: {{ publication.id }}</p>
+                        <a href="{{ publication.url }}" class="btn btn-primary">View Publication</a>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
         </div>
     </div>
-</form>
-
 </body>
 </html>
-
-<style>
-  .input-group {
-  display: flex;
-  justify-content: center;
-  margin-top: 50px;
-}
-
-.input-group .form-control {
-  flex: 1;
-  margin-right: 10px;
-}
-
-.input-group-append {
-  display: flex;
-}
-
-.input-group-append .btn {
-  border-top-left-radius: 0;
-  border-bottom-left-radius: 0;
-}
-
-</style>

@@ -12,19 +12,66 @@ import random
 
 
 def index(request):
-    return render(request, 'search/index.html')
+    es = Elasticsearch(['http://localhost:9200'])
+    es_publications = es.search(index="publication")['hits']['hits']
+    context = {}
 
-
+    if es_publications:
+        context['publications'] = publicationMakeContextElastic(es, es_publications)
+        publicationShowElastic(es, es_publications)
+    else:
+        print("İçerik Bulunamadı!")
+          
+    return render(request, 'search/index.html', context)
 
 def publicationShowElastic(es, publications):
     for publication in publications:
-        publication_id = publication.pop('_id')
         try:
-            result = es.get(index="publication", id=publication_id)
-            print(result['_source'])
+            result = es.get(index="publication", id=publication['_id'])
+            source = result['_source']
+            print("Title:", source['title'])
+            print("Publication Date:", source['publication_date'])
+            print("Authors:", source['authors'])
+            print("Publication Type:", source['publication_type'])
+            print("Publisher:", source['publisher'])
+            print("Keywords Search:", source['keywords_search'])
+            print("Keywords Article:", ', '.join(source['keywords_article']))
+            print("Summary:", source['summary'])
+            print("References:")
+            for reference in source['references']:
+                print("\t", reference)
+            print("Citation Count:", source['citation_count'])
+            print("DOI:", source['doi'])
+            print("URL:", source['url'])
             print("\n\n\n")
         except Exception as e:
             print(f"Hata: {e}")
+
+def publicationMakeContextElastic(es, publications):
+    pdf_titles = []
+    IDs = []
+    urls = []
+
+    for publication in publications:
+        try:
+            result = es.get(index="publication", id=publication['_id'])
+            source = result['_source']
+            IDs.append(result['_id'])
+            pdf_titles.append(source['title'])
+            urls.append(source['url'])
+        except Exception as e:
+            print(f"Hata: {e}")
+
+    context_list = []
+
+    for title, id, url in zip(pdf_titles, IDs, urls):
+        context_list.append({
+            'title': title,
+            'id': id,
+            'url': url,
+        })
+
+    return context_list
 
 def deleteAllPublicationsElastic(es):
     indexs = es.indices.get_alias().keys()
