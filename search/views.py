@@ -18,7 +18,6 @@ def index(request):
 
     if es_publications:
         context['publications'] = publicationMakeContextElastic(es, es_publications)
-        #publicationShowElastic(es, es_publications)
     else:
         print("İçerik Bulunamadı!")
           
@@ -282,9 +281,9 @@ def takeDetailArticlesAuthors(soup):
   return author_content
 
 def takeDetailArticlesAbstract(soup):
-  div_tag = soup.find('div', class_='article-abstract')
-  abstract_content = div_tag.find('p').text.strip()
-  return abstract_content
+    abstract_div = soup.find('div', class_='article-abstract data-section')
+    paragraph = abstract_div.find('p').text.strip()
+    return paragraph
 
 def takeDetailArticlesKeywords(soup):
   div_tag = soup.find('div', class_='article-keywords')
