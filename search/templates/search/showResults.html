@@ -1,5 +1,3 @@
-<!-- result/showResults.html -->
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -24,47 +22,91 @@
     </nav>
 
     <div class="container">
-        <div class="mb-8"></div> <!-- Boşluk -->
-        <h1>Search Results for "{{ corrected_query }}"</h1>
-        {% if query != corrected_query %}
-        <p>Sorry, no results found for "{{ query }}". Did you mean: "{{ corrected_query }}"?</p>
-        {% endif %}
-    
-        <form action="{% url 'show_filtered' %}" method="GET">
-            <!-- Mevcut query'yi saklamak için gizli input alanı -->
-            <input type="hidden" name="query" value="{{ query }}">
-            <input type="hidden" name="corrected_query" value="{{ corrected_query }}">
-            <input type="hidden" name="url" value="{{ url }}">
-            <select name="sort">
-                <option value="oldest">En Eskiden En Yeniye</option>
-                <option value="newest">En Yeniden En Eskiye</option>
-                <option value="much">En Fazla Atıf Sayısından En Aza</option>
-                <option value="less">En Az Atıf Sayısından En Fazlaya</option>
-            </select>
-            <button type="submit">Filtrele</button>
-        </form>
-        
-        <div class="mb-8"></div> <!-- Boşluk -->
-    
         <div class="row">
-            {% for title, link, websitelink, year, cite in pdf_zip %}
-            <div class="col-md-12">
-                <div class="card mb-4">
-                    <div class="card-body">
-                        <a href="{{ link }}" target="_blank" class="btn btn-primary float-right">
-                            <i class="fas fa-file-pdf"></i> PDF
-                        </a>
-                        <h5 class="card-title">
-                            <button class="btn btn-link" onclick="window.location.href='{% url 'detail' %}?title={{ title|urlencode }}&websitelink={{ websitelink|urlencode }}'">Detail</button>{{ title }}
-                        </h5>
-                        <p class="card-text">Year: {{ year }}</p>
-                        <p class="card-text">Cite Count: {{ cite }}</p>
+            <!-- Sol Tarafta Filtreleme -->
+            <div class="col-md-3">
+                <div class="mb-8"></div> <!-- Boşluk -->
+                <h4>Filtrele</h4>
+                <hr>
+                <form action="{% url 'show_filtered' %}" method="GET">
+                    <input type="hidden" name="query" value="{{ query }}">
+                    <input type="hidden" name="corrected_query" value="{{ corrected_query }}">
+                    <input type="hidden" name="url" value="{{ url }}">
+                    <input type="hidden" name="articleTypes" value="{{ articleTypes }}">
+                    <div class="form-group">
+                        <label for="article_type">Makale Tipi:</label>
+                        <select class="form-control" id="article_type" name="article_type">
+                            <option value="any">Herhangi Bir Tip</option>
+                            <option value="research">Research Article</option>
+                            <option value="review">Review</option>
+                            <option value="editorial">Editorial</option>
+                            <option value="conference">Conference Paper</option>
+                        </select>
                     </div>
+                    <div class="form-group">
+                        <label for="year">Yıl:</label>
+                        <select class="form-control" id="year" name="year">
+                            <option value="">Seçiniz</option>
+                            <option value="2024">2024</option>
+                            <option value="2023">2023</option>
+                            <option value="2022">2022</option>
+                            <option value="2021">2021</option>
+                            <option value="2020">2020</option>
+                            <option value="2019">2019</option>
+                            <!-- Diğer yılları buraya ekleyebilirsiniz -->
+                        </select>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Filtrele</button>
+                </form>
+            </div>
+
+            <!-- Sağ Tarafta Sıralama -->
+            <div class="col-md-9">
+                <div class="mb-8"></div> <!-- Boşluk -->
+                <h1>Search Results for "{{ corrected_query }}"</h1>
+                {% if query != corrected_query %}
+                <p>Sorry, no results found for "{{ query }}". Did you mean: "{{ corrected_query }}"?</p>
+                {% endif %}
+
+                <form action="{% url 'show_filtered' %}" method="GET">
+                    <input type="hidden" name="query" value="{{ query }}">
+                    <input type="hidden" name="corrected_query" value="{{ corrected_query }}">
+                    <input type="hidden" name="url" value="{{ url }}">
+                    <input type="hidden" name="articleTypes" value="{{ articleTypes }}">
+                    <div class="form-group">
+                        <label for="sort">Sırala:</label>
+                        <select class="form-control" id="sort" name="sort">
+                            <option value="oldest">En Eskiden En Yeniye</option>
+                            <option value="newest">En Yeniden En Eskiye</option>
+                            <option value="much">En Fazla Atıf Sayısından En Aza</option>
+                            <option value="less">En Az Atıf Sayısından En Fazlaya</option>
+                        </select>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Filtrele</button>
+                </form>
+
+                <div class="mb-8"></div> <!-- Boşluk -->
+
+                <div class="row justify-content-center">
+                    {% for title, link, websitelink, year, cite, articleTypes in pdf_zip %}
+                    <div class="col-md-6">
+                        <div class="card mb-4">
+                            <div class="card-body">
+                                <a href="{{ link }}" target="_blank" class="btn btn-primary float-right">
+                                    <i class="fas fa-file-pdf"></i> PDF
+                                </a>
+                                <h5 class="card-title">
+                                    <button class="btn btn-link" onclick="window.location.href='{% url 'detail' %}?title={{ title|urlencode }}&websitelink={{ websitelink|urlencode }}'">Detail</button>{{ title }}
+                                </h5>
+                                <p class="card-text">Year: {{ year }}</p>
+                                <p class="card-text">Cite Count: {{ cite }}</p>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
                 </div>
             </div>
-            {% endfor %}
         </div>
     </div>
-    
 </body>
 </html>

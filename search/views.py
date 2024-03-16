@@ -145,6 +145,16 @@ def takeAllCiteCount(websites):
         citeCounter.append(len(takeDetailArticlesCites(soup)))
     return citeCounter
 
+def takeAllArticleTypes(websites):
+    articleTypes = []
+
+    for website in websites:
+        response = requests.get(website)
+        html_content = response.text
+        soup = BeautifulSoup(html_content, 'html.parser')
+        articleTypes.append(takeDetailArticlesType(soup))
+    return articleTypes
+
 def show_result(request):
     es = Elasticsearch(['http://localhost:9200'])
     
@@ -159,6 +169,7 @@ def show_result(request):
 
     query = request.GET.get('q')
     corrected_query = correct_spelling(query)
+
     url = f"https://dergipark.org.tr/en/search?q={corrected_query}&section=articles"
     response = requests.get(url)
 
@@ -170,47 +181,45 @@ def show_result(request):
         pdf_links = takeAllPdfLinks(websitelinks)
         years = takeArticlesDates(soup)
         cites = takeAllCiteCount(websitelinks)
-
-        for year in years:
-            print(year)
+        articleTypes = takeAllArticleTypes(websitelinks)
         
         #threading.Thread(target=download_pdf_background, args=(pdf_links,)).start() # Pdfleri indirme işlemi
-    pdf_zip = zip(pdf_titles, pdf_links, websitelinks, years, cites)
-    print(url) 
+    pdf_zip = zip(pdf_titles, pdf_links, websitelinks, years, cites, articleTypes)
+
+    print("Birinici: ")
+    print(articleTypes)
  
-    print("Kontrol Noktası 1")
     counterTitle = 0
     for website in websitelinks:
-       print("Kontrol Noktası 2")
        id = random.randint(1, 10000000)
        saveAllDetail(website, query, id, pdf_titles[counterTitle])
        counterTitle += 1
-    print("Kontrol Noktası 3")
-    
-    print("Kontrol Noktası 4")
+
     collectionNew = db['publications']
-    print("Kontrol Noktası 5")
     publicationsNew = collectionNew.find()
-    print("Kontrol Noktası 6")
     savePublicationsElastic(es, publicationsNew)
-    print("Kontrol Noktası 7")
-    
 
     context = {
         'query': query,
         'corrected_query': corrected_query,
         'url': url,
         'pdf_zip': pdf_zip,
+        'articleTypes': articleTypes
     }
 
     return render(request, 'search/showResults.html', context)
 
 def show_filtered(request):
     sort_option = request.GET.get('sort')
+    article_type_option = request.GET.get('article_type')
     url = request.GET.get('url')
     query = request.GET.get('query')
     corrected_query = request.GET.get('corrected_query')
     response = requests.get(url)
+
+    articleTypes = request.GET.get('articleTypes')
+    print("OLDU MU?????:")
+    print(articleTypes)
     
     if response.status_code == 200:
         html_content = response.text
@@ -220,7 +229,8 @@ def show_filtered(request):
         pdf_links = takeAllPdfLinks(websitelinks)
         years = takeArticlesDates(soup)
         cites = takeAllCiteCount(websitelinks)
-    pdf_zip = zip(pdf_titles, pdf_links, websitelinks, years, cites)
+    pdf_zip = zip(pdf_titles, pdf_links, websitelinks, years, cites, articleTypes)
+
     if sort_option == 'oldest':
         pdf_zip = sorted(pdf_zip, key=lambda x: x[3])
     elif sort_option == 'newest':
